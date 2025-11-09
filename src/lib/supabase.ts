@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient, createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
 // Get environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -11,22 +13,70 @@ const isValidConfig = () => {
          supabaseAnonKey.startsWith('eyJ')
 }
 
-// Create client with minimal validation to avoid Vercel issues
+// Legacy client for backward compatibility
 export const supabase = (() => {
   if (!isValidConfig()) {
-    console.warn('Supabase client: Environment variables not configured')
+    console.warn('⚠️ Supabase client: Environment variables not configured')
     return null
   }
 
   try {
     return createClient(supabaseUrl!, supabaseAnonKey!)
   } catch (error) {
-    console.error('Failed to create Supabase client:', error)
+    console.error('🚨 Failed to create Supabase client:', error)
     return null
   }
 })()
 
-// Safe client creation function
+// NEW: Browser client for Client Components
+export const createBrowserSupabaseClient = () => {
+  if (!isValidConfig()) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Supabase environment variables are required in production')
+    }
+    return null
+  }
+  
+  return createBrowserClient(supabaseUrl!, supabaseAnonKey!)
+}
+
+// NEW: Server client for Server Components, Route Handlers, and Middleware
+export const createServerSupabaseClient = () => {
+  if (!isValidConfig()) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Supabase environment variables are required in production')
+    }
+    return null
+  }
+
+  const cookieStore = cookies()
+
+  return createServerClient(
+    supabaseUrl!,
+    supabaseAnonKey!,
+    {
+      cookies: {
+        get: (name: string) => cookieStore.get(name)?.value,
+        set: (name: string, value: string, options: any) => {
+          try {
+            cookieStore.set(name, value, options)
+          } catch (error) {
+            // Handle cases where cookies can't be set (e.g., in middleware)
+          }
+        },
+        remove: (name: string, options: any) => {
+          try {
+            cookieStore.set(name, '', { ...options, maxAge: 0 })
+          } catch (error) {
+            // Handle cases where cookies can't be removed
+          }
+        },
+      },
+    }
+  )
+}
+
+// Safe client creation function (legacy)
 export const createSupabaseClient = () => {
   if (!isValidConfig()) {
     if (process.env.NODE_ENV === 'production') {
