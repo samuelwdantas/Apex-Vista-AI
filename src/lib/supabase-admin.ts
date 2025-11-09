@@ -14,7 +14,7 @@ const isValidConfig = () => {
 // Create admin client with minimal validation
 export const supabaseAdmin = (() => {
   if (!isValidConfig()) {
-    console.warn('⚠️ Supabase admin client: Invalid configuration')
+    console.warn('Supabase admin client: Invalid configuration')
     return null
   }
 
@@ -26,7 +26,7 @@ export const supabaseAdmin = (() => {
       }
     })
   } catch (error) {
-    console.error('🚨 Failed to create Supabase admin client:', error)
+    console.error('Failed to create Supabase admin client:', error)
     return null
   }
 })()
@@ -39,7 +39,7 @@ export const getSupabaseAdminClient = () => {
 
   // If client is null, try to create a new one
   if (!isValidConfig()) {
-    console.error('🚨 Supabase environment variables not configured properly')
+    console.error('Supabase environment variables not configured properly')
     return null
   }
 
@@ -51,7 +51,7 @@ export const getSupabaseAdminClient = () => {
       }
     })
   } catch (error) {
-    console.error('🚨 Failed to create Supabase admin client:', error)
+    console.error('Failed to create Supabase admin client:', error)
     return null
   }
 }
