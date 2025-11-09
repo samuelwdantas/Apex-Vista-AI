@@ -14,14 +14,14 @@ const isValidConfig = () => {
 // Create client with minimal validation to avoid Vercel issues
 export const supabase = (() => {
   if (!isValidConfig()) {
-    console.warn('⚠️ Supabase client: Environment variables not configured')
+    console.warn('Supabase client: Environment variables not configured')
     return null
   }
 
   try {
     return createClient(supabaseUrl!, supabaseAnonKey!)
   } catch (error) {
-    console.error('🚨 Failed to create Supabase client:', error)
+    console.error('Failed to create Supabase client:', error)
     return null
   }
 })()
